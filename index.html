@@ -158,6 +158,7 @@
         isDraggingThumb: false,
         isDraggingMaster: false,
         genreButtonActive: [false, false, false, false, false],
+        audioUnlocked: false,
         togglePlayAll() {
           const audios = document.querySelectorAll('audio');
           if (!this.isPlaying) {
@@ -238,6 +239,25 @@
             if (newAudio.readyState > 0) {
               onLoaded();
             }
+          });
+        },
+        unlockAllAudio() {
+          if (this.audioUnlocked) return;
+          this.audioUnlocked = true;
+          // For each track, for each genre, create and unlock audio
+          this.tracks.forEach((track, i) => {
+            track.genres.forEach((genre, gIdx) => {
+              // Create a hidden audio element for each genre if not already present
+              let audio = document.createElement('audio');
+              audio.src = genre.src;
+              audio.preload = 'auto';
+              audio.style.display = 'none';
+              document.body.appendChild(audio);
+              // Try to unlock by playing and pausing
+              audio.play().then(() => audio.pause()).catch(() => {});
+              // Remove after unlock
+              setTimeout(() => { audio.remove(); }, 1000);
+            });
           });
         },
         startDrag(i, event) {
@@ -324,14 +344,14 @@
         },
         init() {
           this.setAllVolumes();
-          // Preload all audio files for all genres
-          this.tracks.forEach(track => {
-            track.genres.forEach(genre => {
-              const audio = new Audio();
-              audio.src = genre.src;
-              audio.preload = 'auto';
-            });
-          });
+          // Wait for first user interaction to unlock audio
+          const unlockHandler = () => {
+            this.unlockAllAudio();
+            window.removeEventListener('click', unlockHandler);
+            window.removeEventListener('touchstart', unlockHandler);
+          };
+          window.addEventListener('click', unlockHandler);
+          window.addEventListener('touchstart', unlockHandler);
           // Keyboard volume controls (add only once)
           if (!window._audioKeyListenerAdded) {
             window._audioKeyListenerAdded = true;
