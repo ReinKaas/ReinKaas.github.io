@@ -16,7 +16,11 @@
       <div class="relative flex flex-col items-center w-1/3 min-[450px]:w-12 shrink-0">
         <div x-text="track.label" class="mb-4 font-semibold"></div>
         <!-- toggle button to swap genre of sound -->
-        <div class="size-12 aspect-square bg-gray-600 border-white border-2 rounded-md mb-8 shadow-2xl flex items-center justify-center cursor-pointer" @click="toggleGenre(i)">
+        <div
+          class="size-12 aspect-square bg-gray-600 border-white border-2 rounded-md mb-8 shadow-2xl flex items-center justify-center cursor-pointer duration-300 ease-in-out hover:bg-gray-800"
+          :class="genreButtonActive[i] ? 'bg-gray-800' : ''"
+          @click="toggleGenre(i)"
+        >
         </div>
         <!-- /toggle button-->
         <audio :src="track.genres[track.genreIndex].src" type="audio/mpeg" @timeupdate="updateCurrentTime(i, $event)" x-ref="'audio'+i"></audio>
@@ -153,6 +157,7 @@
         debug: false,
         isDraggingThumb: false,
         isDraggingMaster: false,
+        genreButtonActive: [false, false, false, false, false],
         togglePlayAll() {
           const audios = document.querySelectorAll('audio');
           if (!this.isPlaying) {
@@ -205,6 +210,9 @@
           this.debug =! this.debug;
         },
         toggleGenre(i) {
+          // Set highlight for feedback
+          this.genreButtonActive[i] = true;
+          setTimeout(() => { this.genreButtonActive[i] = false }, 200);
           const track = this.tracks[i];
           const audioEls = document.querySelectorAll('audio');
           const currentAudio = audioEls[i];
